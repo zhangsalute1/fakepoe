@@ -1,71 +1,83 @@
 <template>
     <div class="chat">
-        <h2>聊天</h2>
-        <div class="chat-history">
-            <!-- 显示聊天记录 -->
-        </div>
-        <div class="chat-input">
-            <a-input v-model:value="message" placeholder="请输入消息" />
-            <a-button type="primary" @click="sendMessage">发送</a-button>
+        <a-list class="messages" :data-source="messages" :bordered="false">
+            <template #renderItem="{ item }">
+                <a-list-item :class="item.role">
+                    <a-typography>
+                        <a-typography-paragraph>{{ item.content }}</a-typography-paragraph>
+                    </a-typography>
+                </a-list-item>
+            </template>
+        </a-list>
+        <div class="input-box">
+            <a-input v-model:value="newMessage" placeholder="Type your message..." />
+            <a-button type="primary" @click="sendMessage">Send</a-button>
         </div>
     </div>
 </template>
 
 <script>
-import { defineComponent, ref, onMounted } from 'vue'
-import { sendMessage, getHistory } from '@/api/chat'
+import { ref } from 'vue';
+import axios from 'axios';
+import { message } from 'ant-design-vue';
 
-export default defineComponent({
+export default {
     setup() {
-        const message = ref('')
-        const chatHistory = ref([])
+        const messages = ref([]);
+        const newMessage = ref('');
 
         const sendMessage = async () => {
-            try {
-                await sendMessage(message.value)
-                // 发送消息成功后的处理逻辑
-                message.value = ''
-            } catch (error) {
-                // 处理发送消息失败的逻辑
-            }
-        }
+            const userMessage = {
+                role: 'user',
+                content: newMessage.value,
+            };
+            messages.value.push(userMessage);
+            newMessage.value = '';
 
-        const fetchHistory = async () => {
             try {
-                const history = await getHistory()
-                chatHistory.value = history
+                const response = await axios.post('/chat', {
+                    model: 'gpt-3.5-turbo',
+                    messages: messages.value,
+                });
+                const assistantMessage = {
+                    role: 'assistant',
+                    content: response.data.message,
+                };
+                messages.value.push(assistantMessage);
             } catch (error) {
-                // 处理获取聊天记录失败的逻辑
+                console.error('Error:', error);
+                message.error('An error occurred while sending the message.');
             }
-        }
-
-        onMounted(() => {
-            fetchHistory()
-        })
+        };
 
         return {
-            message,
-            chatHistory,
+            messages,
+            newMessage,
             sendMessage,
-        }
+        };
     },
-})
+};
 </script>
 
 <style scoped>
 .chat {
-    max-width: 600px;
-    margin: 0 auto;
-    padding: 20px;
-}
-
-.chat-history {
-    height: 500px;
-    overflow-y: auto;
-    margin-bottom: 20px;
-}
-
-.chat-input {
     display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.messages {
+    flex: 1;
+    overflow-y: auto;
+}
+
+.input-box {
+    display: flex;
+    margin-top: 16px;
+}
+
+.input-box .ant-input {
+    flex: 1;
+    margin-right: 8px;
 }
 </style>

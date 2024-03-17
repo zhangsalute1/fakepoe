@@ -12,7 +12,7 @@ app.mount('#app')
 import axios from 'axios'
 
 // 配置 API 的基础 URL
-axios.defaults.baseURL = 'http://api.example.com'
+axios.defaults.baseURL = 'http://localhost:3000'
 
 // 添加请求拦截器
 axios.interceptors.request.use(
