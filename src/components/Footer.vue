@@ -1,13 +1,23 @@
-<template lang="">
-    <div>
-        footer
-    </div>
+<template>
+    <footer>
+        <p>&copy; 2023 Your Company. All rights reserved.</p>
+    </footer>
 </template>
+
 <script>
-export default {
+import { defineComponent } from 'vue'
 
-}
+export default defineComponent({
+    setup() {
+        return {}
+    },
+})
 </script>
-<style lang="">
 
+<style scoped>
+footer {
+    background-color: #f0f0f0;
+    padding: 20px;
+    text-align: center;
+}
 </style>
