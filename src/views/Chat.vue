@@ -90,13 +90,6 @@ export default {
         };
 
 
-        const saveChatHistory = () => {
-            // 将聊天历史记录保存到本地存储
-            localStorage.setItem('chatHistory', JSON.stringify(messages.value));
-        };
-
-
-
         return {
             messages,
             newMessage,
@@ -110,9 +103,7 @@ export default {
         };
     },
 
-    unmounted() {
-        saveChatHistory();
-    },
+
 };
 </script>
 
@@ -121,7 +112,6 @@ export default {
     display: flex;
     flex-direction: column;
     height: calc(100vh - 64px);
-    padding: 16px;
 }
 
 .messages {
