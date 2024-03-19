@@ -8,7 +8,7 @@
                             <strong>{{ item.role === 'user' ? 'You' : selectedModel }}</strong>
                             <span class="timestamp">{{ item.timestamp }}</span>
                         </a-typography-paragraph>
-                        <a-typography-paragraph>{{ item.content }}</a-typography-paragraph>
+                        <a-typography-paragraph v-html="item.content"></a-typography-paragraph>
                     </a-typography>
                 </a-list-item>
             </template>
@@ -32,18 +32,24 @@
 import { ref, onMounted } from 'vue';
 import axios from 'axios';
 import { message } from 'ant-design-vue';
-
+import MarkdownIt from 'markdown-it';
 export default {
     setup() {
+        const md = new MarkdownIt();
         const messages = ref([]);
         const newMessage = ref('');
         const selectedModel = ref('gpt-3.5-turbo');
         const loading = ref(false);
         const errorMessage = ref('');
 
+        // 解析Markdown为HTML
+        const parseMarkdown = (markdownText) => {
+            return md.render(markdownText);
+        };
         const modelOptions = [
             { value: 'gpt-3.5-turbo', label: 'GPT-3.5' },
             { value: 'gpt-4', label: 'GPT-4' },
+            { value: 'gpt-4-32k', label: 'gpt-4-32k' },
         ];
 
         const sendMessage = async () => {
@@ -66,7 +72,7 @@ export default {
                 });
                 const assistantMessage = {
                     role: 'assistant',
-                    content: response.data.message,
+                    content: parseMarkdown(response.data.message),
                     timestamp: new Date().toLocaleString(),
                 };
                 messages.value.push(assistantMessage);
@@ -83,22 +89,13 @@ export default {
             message.info('Context cleared.');
         };
 
-        const loadChatHistory = () => {
-            // 从本地存储加载聊天历史记录
-            const storedMessages = localStorage.getItem('chatHistory');
-            if (storedMessages) {
-                messages.value = JSON.parse(storedMessages);
-            }
-        };
 
         const saveChatHistory = () => {
             // 将聊天历史记录保存到本地存储
             localStorage.setItem('chatHistory', JSON.stringify(messages.value));
         };
 
-        onMounted(() => {
-            loadChatHistory();
-        });
+
 
         return {
             messages,
@@ -109,6 +106,7 @@ export default {
             errorMessage,
             sendMessage,
             clearContext,
+            parseMarkdown
         };
     },
 
